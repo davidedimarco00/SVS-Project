@@ -3,7 +3,6 @@ import math
 import time
 import pygame
 from Networking.MQTTclient import MQTTclient
-from agents.navigation.basic_agent import BasicAgent
 import json
 
 class RadarManager:
