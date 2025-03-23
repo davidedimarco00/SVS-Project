@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from Managers.EnvironmentManager import EnvironmentManager
 from PedestrianDetection.TestPedestrianDetection import TestPedestrianDetection
 from agents.navigation.basic_agent import BasicAgent
+import tabulate
 
 class Scenario2Tester:
     """
@@ -21,6 +22,7 @@ class Scenario2Tester:
         Restituisce un valore float compreso tra 0 e 100.
         """
         successes = 0
+        failures = 0
 
         for i in range(self.num_runs):
             print(f"\n[TEST] Avvio test scenario 2 numero {i+1}/{self.num_runs}")
@@ -46,6 +48,7 @@ class Scenario2Tester:
                 successes += 1
             else:
                 print("[RISULTATO] Collisione avvenuta -> Test fallito.")
+                failures += 1
 
             # 4) Pulizia risorse
             test_pedestrian_detection.cleanup()
@@ -55,7 +58,12 @@ class Scenario2Tester:
 
         # 5) Calcolo della percentuale di successo
         success_rate = (successes / self.num_runs) * 100.0
-        return success_rate
+        return success_rate, successes, failures
+
+
+
+
+
 
 def main():
     client = carla.Client("localhost", 2000)
@@ -73,31 +81,52 @@ def main():
     }
     weather_labels = []
     success_rates = []
+    successes_list = []
+    failures_list = []
+
     for weather_name, weather in weathers.items():
         world.set_weather(weather)
         print(f"\n[EXECUTING] Test with weather: {weather_name}")
         print("Loading...")
-        time.sleep(2)
-        tester = Scenario2Tester(world, env_manager, num_runs=2)
-        success_rate = tester.run_tests()
+        time.sleep(1)
+        tester = Scenario2Tester(world, env_manager, num_runs=70)
+        success_rate, successes, failures = tester.run_tests()
         print(f"[RISULTATI FINALI] Weather: {weather_name}")
         print(f"  Success Rate: {success_rate:.2f}%\n")
+        print(f"  Successes: ", str(successes))
+        print(f"  Failures: ", str(failures))
+
         weather_labels.append(weather_name)
         success_rates.append(success_rate)
+        successes_list.append(successes)
+        failures_list.append(failures)
 
-    # ---- GRAFICO FINALE CON MATPLOTLIB ----
-
-    plt.figure()  # Inizializza una nuova figura
+    # ---- GRAFICO FINALE ----
+    plt.figure()
     x_positions = range(len(weathers))
-    plt.bar(x_positions, success_rates)  # Grafico a barre
+    plt.bar(x_positions, success_rates)
     plt.xticks(x_positions, weather_labels, rotation=45, ha='right')
     plt.ylabel("Success Rate (%)")
     plt.title("Pedestrian Detection - Success Rate")
     plt.ylim(0, 100)
-
-    # Mostra il grafico
     plt.tight_layout()
     plt.show()
+
+    # ---- RISULTATI FINALI IN TABELLA ----
+
+
+    print("\n====== RISULTATI FINALI ======")
+    table_data = []
+    for i in range(len(weather_labels)):
+        table_data.append([
+            weather_labels[i],
+            f"{success_rates[i]:.2f}%",
+            successes_list[i],
+            failures_list[i]
+        ])
+
+    headers = ["Weather", "Success Rate", "Successes", "Failures"]
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 if __name__ == "__main__":
     main()

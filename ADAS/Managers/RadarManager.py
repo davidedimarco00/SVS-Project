@@ -253,7 +253,11 @@ class RadarManager:
             #  - 0 < y < 2    -> copriamo 2 m in avanti rispetto al sensore
             #    (tweak a piacere se il tuo veicolo è più lungo)
             lateral_right_spot = (-1 < x < 3.5) and (0 < y < 2)
-            control = self.vehicle.get_control()
+            try:
+                control = self.vehicle.get_control()
+            except:
+                return
+                #print("Unable to retrieve control, vehicle destroyed")
             if lateral_right_spot:
                 if control.steer > 0.1: # Sta girando a destra
                     self.avoiding_collision = True

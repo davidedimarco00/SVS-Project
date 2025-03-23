@@ -30,6 +30,8 @@ class CameraManager:
         camera_bp = blueprint_library.find('sensor.camera.rgb')
         camera_bp.set_attribute('image_size_x', '800')
         camera_bp.set_attribute('image_size_y', '600')
+        #camera_bp.set_attribute('gamma', '2.2')
+
         camera_bp.set_attribute('fov', '90')
 
         camera_transform = carla.Transform(carla.Location(x=0.5, y=0, z=1.5))
@@ -55,11 +57,11 @@ class CameraManager:
                 cv2.rectangle(image, (x1, y1), (x2, y2), (255, 255, 255), 2)
                 cv2.putText(image, f"Pedestrian {conf:.2f}", (x1, y1 - 5),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                
+
                 self.detected_pedestrian = True
                 if conf > 0.60:
                     self.high_confidence_pedestrian = True
-                
+
                 message = self.format_mqtt_message(x1, y1, float(conf), frame_number)
                 self.mqtt_client.publish("vehicle/pedestrian", message)
 

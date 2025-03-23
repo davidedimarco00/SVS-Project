@@ -17,6 +17,7 @@ class IterativeTestBicycle:
     def run_tests(self):
 
         successes = 0
+        failures = 0
 
         for i in range(self.num_runs):
             print(f"\n[TEST] Avvio test overtaking numero {i+1}/{self.num_runs}")
@@ -34,6 +35,7 @@ class IterativeTestBicycle:
                 successes += 1
             else:
                 print("[RISULTATO] Collisione avvenuta -> Test fallito.")
+                failures += 1
 
             # 4) Pulizia risorse
             test_bicycle_overtaking.env_manager.cleanup()
@@ -43,7 +45,7 @@ class IterativeTestBicycle:
 
         # 5) Calcolo della percentuale di successo
         success_rate = (successes / self.num_runs) * 100.0
-        return success_rate
+        return success_rate, successes, failures
 
 def main():
     client = carla.Client("localhost", 2000)
@@ -65,10 +67,12 @@ def main():
         print(f"\n[EXECUTING] Test with weather: {weather_name}")
         print("Loading...")
         time.sleep(2)
-        tester = IterativeTestBicycle(world, env_manager, num_runs=1)
-        success_rate = tester.run_tests()
+        tester = IterativeTestBicycle(world, env_manager, num_runs=50)
+        success_rate, successes, failures = tester.run_tests()
         print(f"[RISULTATI FINALI] Weather: {weather_name}")
         print(f"  Success Rate: {success_rate:.2f}%\n")
+        print(f"  Successes: ", str(successes))
+        print(f"  Failures: ", str(failures))
         weather_labels.append(weather_name)
         success_rates.append(success_rate)
 

@@ -66,6 +66,7 @@ class TestPedestrianDetection:
         self.camera_manager = CameraManager(self.world, self.vehicle)
         self.camera_manager.spawn_camera()
         self.camera_manager.display_thread.start()
+        self.collision_sensor = CollisionSensor(self.vehicle)
 
         #start scenario
         if self.scenario == 1:
