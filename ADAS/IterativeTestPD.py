@@ -7,63 +7,36 @@ from agents.navigation.basic_agent import BasicAgent
 import tabulate
 
 class Scenario2Tester:
-    """
-    Classe che esegue multiple volte lo Scenario 2,
-    usando la classe TestPedestrianDetection che crea da sé il CollisionSensor.
-    """
     def __init__(self, world, env_manager, num_runs=50):
         self.world = world
         self.env_manager = env_manager
         self.num_runs = num_runs
 
     def run_tests(self):
-        """
-        Esegue i test per lo scenario 2 e ritorna la percentuale di successo.
-        Restituisce un valore float compreso tra 0 e 100.
-        """
         successes = 0
         failures = 0
-
         for i in range(self.num_runs):
-            print(f"\n[TEST] Avvio test scenario 2 numero {i+1}/{self.num_runs}")
-
-            # 1) Crea la nuova istanza
+            print(f"\n[TEST] START ADVANCED TEST FOR PEDESTRIAN DETECTION {i+1}/{self.num_runs}")
             test_pedestrian_detection = TestPedestrianDetection(
                 world=self.world,
                 env_manager=self.env_manager,
                 scenario=2
             )
-
-            # 2) Avvia lo scenario. Restituisce True se NON c'è stata collisione
             test_success = test_pedestrian_detection.run_test()
-
-            # 3) Attendi la durata dello scenario
             scenario_duration = 8.0
             start_time = time.time()
             while time.time() - start_time < scenario_duration:
                 self.world.tick()
-
             if test_success:
-                print("[RISULTATO] Nessuna collisione -> Test riuscito.")
+                print("[RESULT] No collision -> test success")
                 successes += 1
             else:
-                print("[RISULTATO] Collisione avvenuta -> Test fallito.")
+                print("[RESULT] Collision! -> test failed")
                 failures += 1
-
-            # 4) Pulizia risorse
             test_pedestrian_detection.cleanup()
-
-            # Attendi un attimo tra un test e l'altro
             time.sleep(1.0)
-
-        # 5) Calcolo della percentuale di successo
         success_rate = (successes / self.num_runs) * 100.0
         return success_rate, successes, failures
-
-
-
-
-
 
 def main():
     client = carla.Client("localhost", 2000)
@@ -91,7 +64,7 @@ def main():
         time.sleep(1)
         tester = Scenario2Tester(world, env_manager, num_runs=70)
         success_rate, successes, failures = tester.run_tests()
-        print(f"[RISULTATI FINALI] Weather: {weather_name}")
+        print(f"[FINAL RESULTS] Weather: {weather_name}")
         print(f"  Success Rate: {success_rate:.2f}%\n")
         print(f"  Successes: ", str(successes))
         print(f"  Failures: ", str(failures))
@@ -101,7 +74,7 @@ def main():
         successes_list.append(successes)
         failures_list.append(failures)
 
-    # ---- GRAFICO FINALE ----
+    #final graph
     plt.figure()
     x_positions = range(len(weathers))
     plt.bar(x_positions, success_rates)
@@ -111,22 +84,6 @@ def main():
     plt.ylim(0, 100)
     plt.tight_layout()
     plt.show()
-
-    # ---- RISULTATI FINALI IN TABELLA ----
-
-
-    print("\n====== RISULTATI FINALI ======")
-    table_data = []
-    for i in range(len(weather_labels)):
-        table_data.append([
-            weather_labels[i],
-            f"{success_rates[i]:.2f}%",
-            successes_list[i],
-            failures_list[i]
-        ])
-
-    headers = ["Weather", "Success Rate", "Successes", "Failures"]
-    print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 if __name__ == "__main__":
     main()

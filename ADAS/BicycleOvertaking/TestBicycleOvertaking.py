@@ -11,27 +11,21 @@ class CollisionSensor:
         self.collision_sensor = None
         self.vehicle = vehicle
         self.collision_detected = False
-        #create the collision sensor and attach to vehicle
         self.collision_sensor = self.world.spawn_actor(
             self.blueprint,
             carla.Transform(),
             attach_to=self.vehicle
         )
-
-        # Ascolta eventuali collisioni
         self.collision_sensor.listen(lambda event: self._on_collision(event))
-
     def _on_collision(self, event):
         self.collision_detected = True
         other_actor = event.other_actor
         print(f"[COLLISION] Collision with: {other_actor.type_id}")
-
     def destroy(self):
         if self.collision_sensor is not None:
             self.collision_sensor.stop()
             self.collision_sensor.destroy()
             self.collision_sensor = None
-
 
 class TestBicycleOvertaking:
     def __init__(self, world, env_manager):
@@ -43,29 +37,24 @@ class TestBicycleOvertaking:
         self.radar = None
 
     def test_bicycle_overtaking(self):
-        """Simulates a maneuver with a random destination for the ego vehicle and a bicycle on the right."""
         print("Starting random destination test...")
-
-        #Spawn ego
-        spawn_index = 1  # Choose a valid spawn point index
+        spawn_index = 1
         self.ego_vehicle = self.env_manager.spawn_vehicle(spawn_index=spawn_index)
         if not self.ego_vehicle:
             print("Failed to spawn ego vehicle.")
             return
         print("Ego vehicle spawned at:", self.ego_vehicle.get_location())
         self.collision_sensor = CollisionSensor(self.ego_vehicle) #attach the collision sensor
-        #move the camera
         spectator = self.world.get_spectator()
         self.env_manager.move_spectator_to(self.ego_vehicle.get_transform(), spectator)
 
-        #set random destination of the ego vehicle, this position ensure that turn right
+        #set a destination
         random_destination = carla.Location(x=-52.186733, y=42.565128, z=0.000000)
         print("Random destination chosen:", random_destination)
         agent = BasicAgent(self.ego_vehicle, target_speed=20)
         agent.set_destination(random_destination)
         agent.ignore_vehicles(True)
-
-        #Spawn the bicycle at right
+        #spawn the bicycle at right
         ego_transform = self.ego_vehicle.get_transform()
         bicycle_spawn_location = carla.Location(
             ego_transform.location.x - ego_transform.get_forward_vector().x * 5.0 + ego_transform.get_right_vector().x * 4.0,
@@ -77,19 +66,17 @@ class TestBicycleOvertaking:
             print("Failed to spawn bicycle.")
         else:
             print("Bicycle spawned at:", self.bicycle.get_location())
-
         #attach the right radar ensure that cover all the right side
         self.radar_right = self.env_manager.spawn_radar(self.ego_vehicle, "lateral")
         radar_manager_lateral = RadarManager(self.ego_vehicle, self.world)
         radar_manager_lateral.spawn_radars()
         time.sleep(2)
-        #
         if self.bicycle:
             print("[INFO]Bicycle starts moving...")
             for _ in range(15):
                 self.bicycle.apply_control(carla.VehicleControl(throttle=0.6))
                 time.sleep(0.1)
-        time.sleep(2) #wait before start the simulation
+        time.sleep(2)
         start_time = time.time()
         
         while time.time() - start_time < 10:
@@ -103,9 +90,7 @@ class TestBicycleOvertaking:
             time.sleep(0.1)
         print("Test completed.")
 
-        #cleanup - the collision sensor is useful just for testing purpose
         if self.collision_sensor:
             self.collision_sensor.destroy()
-        # Clean up
         self.env_manager.cleanup()
         return not self.collision_sensor.collision_detected

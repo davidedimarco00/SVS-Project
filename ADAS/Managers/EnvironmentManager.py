@@ -179,9 +179,6 @@ class EnvironmentManager:
             pedestrian.destroy()
         for bicycle in self.bicycles:
             bicycle.destroy()
-
-
-
         self.sensors.clear()
         self.vehicles.clear()
         self.pedestrians.clear()

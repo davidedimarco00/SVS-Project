@@ -11,7 +11,6 @@ from PedestrianDetection.TestPedestrianDetection import TestPedestrianDetection
 
 
 def select_macro_scenario():
-    """Function to select the macro test category."""
     print("\n===== Select a Macro Test Category =====")
     print("1. Blind Spot Detection (BSD)")
     print("2. Pedestrian Detection")
@@ -26,7 +25,6 @@ def select_macro_scenario():
 
 
 def select_bsd_scenario():
-    """Function to select the specific BSD test type."""
     print("\n===== Select a BSD Test Type =====")
     print("1. Static BSD Test")
     print("2. Dynamic BSD Test")
@@ -40,7 +38,6 @@ def select_bsd_scenario():
 
 
 def select_specific_bsd_test(is_dynamic):
-    """Function to select the specific BSD test within the chosen category."""
     print("\n===== Select a Specific BSD Test =====")
     tests = {
         "1": "Overtake Scenario",
@@ -59,7 +56,6 @@ def select_specific_bsd_test(is_dynamic):
 
 
 def select_specific_detection_test():
-    """Function to select the specific Pedestrian Detection test within the chosen category."""
     print("\n===== Select a Specific Pedestrian Test =====")
     tests = {
         "1": "Standard Detection Scenario",

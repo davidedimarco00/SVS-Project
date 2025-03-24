@@ -8,7 +8,6 @@ class MQTTclient:
         self.client.on_connect = self.on_connect
         self.client.on_subscribe = self.on_subscribe
         self.client.on_publish = self.on_publish
-        
         self.client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
         self.client.username_pw_set(username, password)
         self.client.connect(broker, port)

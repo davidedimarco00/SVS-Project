@@ -144,15 +144,15 @@ class TestBlindSpot:
                 yaw = math.atan2(vector.y, vector.x)
                 current_yaw = math.radians(vehicle.get_transform().rotation.yaw)
 
-                # Differenza di angolo
+                #angle difference
                 angle_diff = (yaw - current_yaw + math.pi) % (2 * math.pi) - math.pi
                 steer = max(-1.0, min(1.0, angle_diff))
 
-                # Calcolo velocità attuale
+                #actual velocity
                 velocity = vehicle.get_velocity()
                 current_speed = math.sqrt(velocity.x**2 + velocity.y**2 + velocity.z**2)
 
-                # Semplice logica di throttle & brake
+                #throttle and braking
                 if current_speed < target_speed:
                     control.throttle = 0.5
                     control.brake = 0.0
@@ -170,38 +170,28 @@ class TestBlindSpot:
                 time.sleep(0.1)
 
     def follow_leader(self, follower, leader, waypoints, target_distance=5.0, max_speed=20.0):
-        """
-        Follower segue il leader, ma si “aggancia” ai waypoints dati.
-        """
         for wp in waypoints:
             target_loc = wp.location if isinstance(wp, carla.Transform) else wp.transform.location
             while follower.get_location().distance(target_loc) >= 1.0:
-                # Get current positions and velocities
                 floc = follower.get_location()
                 lloc = leader.get_location()
                 fvel = follower.get_velocity()
                 lvel = leader.get_velocity()
-
-                # Distanza e speed
+                #distance and compute speed
                 dist_to_leader = floc.distance(lloc)
                 leader_speed = math.sqrt(lvel.x**2 + lvel.y**2 + lvel.z**2)
                 follower_speed = math.sqrt(fvel.x**2 + fvel.y**2 + fvel.z**2)
 
-                # Non superare la velocità del leader
                 speed_ref = min(max_speed, leader_speed)
-
                 control = carla.VehicleControl()
                 distance_error = dist_to_leader - target_distance
 
-                # Semplice logica di throttle
+                #logic of control
                 if distance_error > 2.0:
-                    # Siamo lontani dal leader, accelera
                     control.throttle = min(1.0, 0.5 + 0.1 * distance_error)
                 elif distance_error < -2.0:
-                    # Troppo vicini, frena
                     control.brake = min(1.0, 0.5 - 0.1 * distance_error)
                 else:
-                    # near target distance
                     if follower_speed < speed_ref:
                         control.throttle = 0.3
                         control.brake = 0.0
@@ -209,7 +199,6 @@ class TestBlindSpot:
                         control.throttle = 0.0
                         control.brake = 0.3
 
-                # Steering
                 direction = target_loc - floc
                 target_yaw = math.atan2(direction.y, direction.x)
                 current_yaw = math.radians(follower.get_transform().rotation.yaw)
