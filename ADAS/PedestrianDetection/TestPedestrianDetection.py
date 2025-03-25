@@ -73,9 +73,9 @@ class TestPedestrianDetection:
 
         print("[INFO] Running Scenario 1 (Tunnel of Pedestrians).")
         #create a tunnel of pedestrians to simulate crowd
-        num_walkers_per_side = 6
-        distance_between_walkers = 4.0
-        lateral_offset = 4.0
+        num_walkers_per_side = 12
+        distance_between_walkers = 2
+        lateral_offset = 2.0
         initial_offset = 10.0
         vehicle_transform = self.vehicle.get_transform()
         vehicle_x = vehicle_transform.location.x
@@ -150,27 +150,31 @@ class TestPedestrianDetection:
 
     def vehicle_control_loop_scenario_1(self):
         while not self.stop_display:
+            safety_distance = self.compute_safety_distance(self.vehicle)
             if not (self.camera_manager.detected_pedestrian or self.camera_manager.high_confidence_pedestrian):
-                self.vehicle.apply_control(
-                    carla.VehicleControl(throttle=0.7, brake=0.0)
-                )
+                self.vehicle.apply_control(carla.VehicleControl(throttle=0.2, brake=0.0))
             else:
                 ped_in_path = False
                 for ped in self.env_manager.pedestrians:
-                    if self.is_pedestrian_in_path(self.vehicle, ped, max_distance=20.0, max_lateral=2.0):
+                    if self.is_pedestrian_in_path(self.vehicle, ped, max_distance=safety_distance+10, max_lateral=1.0):
                         ped_in_path = True
                         break
                 if ped_in_path:
                     if self.camera_manager.high_confidence_pedestrian:
                         print("[ALERT] High-confidence pedestrian IN PATH -> Full brake!")
                         self.vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+
+                        #time.sleep(1)
                     else:
                         print("[WARNING] Pedestrian in path -> Slowing down.")
-                        self.vehicle.apply_control(carla.VehicleControl(throttle=0.2, brake=0.0))
+                        self.vehicle.apply_control(carla.VehicleControl(throttle=0.1, brake=0.0))
+
                 else:
+                    print("[ALERT] No pedestrian -> gas")
                     self.vehicle.apply_control(
-                        carla.VehicleControl(throttle=0.7, brake=0.0)
+                        carla.VehicleControl(throttle=0.4, brake=0.0)
                     )
+
             time.sleep(0.1)
 
     def is_pedestrian_in_path(self, vehicle, pedestrian, max_distance=20.0, max_lateral=2.0):
@@ -238,10 +242,10 @@ class TestPedestrianDetection:
     def vehicle_control_loop_scenario_2(self):
         while not self.stop_display:
             safety_distance = self.compute_safety_distance(self.vehicle)
-            if self.camera_manager and self.camera_manager.high_confidence_pedestrian and self.is_pedestrian_in_path(self.vehicle, self.walker, safety_distance+2, max_lateral=6.0):
+            if self.camera_manager and self.camera_manager.high_confidence_pedestrian and self.is_pedestrian_in_path(self.vehicle, self.walker, safety_distance+5, max_lateral=6.0):
                 print("[ALERT] High-confidence Pedestrian in PATH -> Full brake.")
                 self.vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            elif self.camera_manager and self.camera_manager.detected_pedestrian and self.is_pedestrian_in_path(self.vehicle, self.walker, safety_distance+2, max_lateral=6.0):
+            elif self.camera_manager and self.camera_manager.detected_pedestrian and self.is_pedestrian_in_path(self.vehicle, self.walker, safety_distance+5, max_lateral=6.0):
                 print("[WARNING] Pedestrian detected IN PATH -> Slowing down.")
                 self.vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=0.2))
             else:

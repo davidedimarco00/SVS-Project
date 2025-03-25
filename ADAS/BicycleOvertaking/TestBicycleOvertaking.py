@@ -78,7 +78,6 @@ class TestBicycleOvertaking:
                 time.sleep(0.1)
         time.sleep(2)
         start_time = time.time()
-        
         while time.time() - start_time < 10:
             if not self.ego_vehicle:
                 break

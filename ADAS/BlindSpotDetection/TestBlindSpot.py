@@ -134,7 +134,6 @@ class TestBlindSpot:
                 location = wp.transform.location
             else:
                 location = wp.location
-
             while True:
                 vehicle_location = vehicle.get_location()
                 distance = vehicle_location.distance(location)
