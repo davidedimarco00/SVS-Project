@@ -60,6 +60,7 @@ class TestBlindSpot:
 
 
     def test_dynamic_ego(self, ego_vehicle):
+        print("sono qui")
         carla_map = self.world.get_map()
         ego_start_waypoint = carla_map.get_waypoint(ego_vehicle.get_location())
         #generate waypoint
